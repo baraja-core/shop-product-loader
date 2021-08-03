@@ -73,7 +73,9 @@ final class HeurekaProductLoader implements ProductLoader
 	{
 		$return = [];
 		$mainCategory = $product->getMainCategory();
-		$heurekaCategoryId = $mainCategory !== null ? $mainCategory->getHeurekaCategoryId() : null;
+		$heurekaCategoryId = $mainCategory !== null
+			? $mainCategory->getHeurekaCategoryId()
+			: null;
 		if ($heurekaCategoryId === null) {
 			throw new \InvalidArgumentException('Heureka category does not exist.');
 		}

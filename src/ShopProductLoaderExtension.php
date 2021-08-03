@@ -14,7 +14,9 @@ final class ShopProductLoaderExtension extends CompilerExtension
 	{
 		$builder = $this->getContainerBuilder();
 		OrmAnnotationsExtension::addAnnotationPathToManager(
-			$builder, 'Baraja\Shop\ProductLoader\Entity', __DIR__ . '/Entity'
+			$builder,
+			'Baraja\Shop\ProductLoader\Entity',
+			__DIR__ . '/Entity',
 		);
 
 		$builder->addDefinition($this->prefix('heurekaProductLoader'))
