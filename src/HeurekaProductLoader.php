@@ -157,7 +157,8 @@ final class HeurekaProductLoader implements ProductLoader
 
 		$return = strip_tags((string) $product->getShortDescription());
 		foreach ($product->getSmartDescriptions() as $smartDescription) {
-			$return .= ($return ? "\n\n<hr>\n\n" : '') . strip_tags((string) $smartDescription->getDescription());
+			$return .= ($return !== '' ? "\n\n<hr>\n\n" : '');
+			$return .= strip_tags((string) $smartDescription->getDescription());
 		}
 		if ($return === '') {
 			$return = $defaultDescription;
