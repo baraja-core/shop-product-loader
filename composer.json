@@ -1,7 +1,7 @@
 {
-	"name": "baraja-core/template",
+	"name": "baraja-core/shop-product-loader",
 	"description": "This is a template package.",
-	"homepage": "https://github.com/baraja-core/template",
+	"homepage": "https://github.com/baraja-core/shop-product-loader",
 	"authors": [
 		{
 			"name": "Jan Barášek",
@@ -9,9 +9,15 @@
 		}
 	],
 	"require": {
-		"php": "^8.0"
+		"php": "^8.0",
+		"baraja-core/dynamic-configuration": "^2.1",
+		"baraja-core/heureka-feed": "^2.0",
+		"baraja-core/shop": "^1.0",
+		"baraja-core/shop-product": "^1.0",
+		"baraja-core/url": "^1.1"
 	},
 	"require-dev": {
+		"nette/application": "^3.1",
 		"tracy/tracy": "^2.8",
 		"phpstan/phpstan": "^0.12.94",
 		"phpstan/extension-installer": "^1.0",

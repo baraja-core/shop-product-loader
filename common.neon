@@ -1,0 +1,2 @@
+extensions:
+	shopProductLoader: Baraja\Shop\ProductLoader\ShopProductLoaderExtension
