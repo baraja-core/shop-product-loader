@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Baraja\Shop\ProductLoader\Entity;
 
 
-use Doctrine\ORM\Mapping as ORM;
 use Baraja\Shop\Product\Entity\Product;
+use Baraja\Shop\ProductLoader\Repository\ProductLoaderMessageRepository;
+use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ProductLoaderMessageRepository::class)]
 #[ORM\Table(name: 'shop__product_loader_message')]
 class ProductLoaderMessage
 {
