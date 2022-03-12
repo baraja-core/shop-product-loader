@@ -5,41 +5,41 @@ declare(strict_types=1);
 namespace Baraja\Shop\ProductLoader\Entity;
 
 
-use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Baraja\Shop\Product\Entity\Product;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\Table;
+use Baraja\Shop\ProductLoader\Repository\ProductLoaderMessageRepository;
+use Doctrine\ORM\Mapping as ORM;
 
-#[Entity]
-#[Table(name: 'shop__product_loader_message')]
+#[ORM\Entity(repositoryClass: ProductLoaderMessageRepository::class)]
+#[ORM\Table(name: 'shop__product_loader_message')]
 class ProductLoaderMessage
 {
-	use IdentifierUnsigned;
-
 	public const
 		LEVEL_INFO = 'info',
 		LEVEL_MESSAGE = 'message',
 		LEVEL_ERROR = 'error',
 		LEVEL_CRITICAL = 'critical';
 
-	#[ManyToOne(targetEntity: Product::class)]
+	#[ORM\Id]
+	#[ORM\Column(type: 'integer', unique: true, options: ['unsigned' => true])]
+	#[ORM\GeneratedValue]
+	protected int $id;
+
+	#[ORM\ManyToOne(targetEntity: Product::class)]
 	private Product $product;
 
-	#[Column(type: 'string', length: 32, unique: true)]
+	#[ORM\Column(type: 'string', length: 32, unique: true)]
 	private string $hash;
 
-	#[Column(type: 'text')]
+	#[ORM\Column(type: 'text')]
 	private string $message;
 
-	#[Column(type: 'string', length: 16)]
+	#[ORM\Column(type: 'string', length: 16)]
 	private string $level;
 
-	#[Column(type: 'datetime')]
+	#[ORM\Column(type: 'datetime')]
 	private \DateTimeInterface $insertedDate;
 
-	#[Column(type: 'datetime')]
+	#[ORM\Column(type: 'datetime')]
 	private \DateTimeInterface $updatedDate;
 
 
@@ -51,6 +51,12 @@ class ProductLoaderMessage
 		$this->hash = md5($message);
 		$this->insertedDate = new \DateTimeImmutable;
 		$this->updateNow();
+	}
+
+
+	public function getId(): int
+	{
+		return $this->id;
 	}
 
 

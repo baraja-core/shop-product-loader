@@ -6,11 +6,12 @@ namespace Baraja\Shop\ProductLoader;
 
 
 use Baraja\Doctrine\EntityManager;
-use Baraja\DynamicConfiguration\Configuration;
 use Baraja\Heureka\CategoryManager;
 use Baraja\Heureka\Delivery;
 use Baraja\Heureka\HeurekaProduct;
 use Baraja\Heureka\ProductLoader;
+use Baraja\Shop\Delivery\Entity\Delivery as DeliveryEntity;
+use Baraja\Shop\Delivery\Repository\DeliveryRepository;
 use Baraja\Shop\Product\Entity\Product;
 use Baraja\Shop\Product\Entity\ProductVariant;
 use Baraja\Shop\ShopInfo;
@@ -19,14 +20,22 @@ use Nette\Application\LinkGenerator;
 
 final class HeurekaProductLoader implements ProductLoader
 {
+	private DeliveryRepository $deliveryRepository;
+
+	/** @var array<int, DeliveryEntity>|null */
+	private ?array $deliveryList = null;
+
+
 	public function __construct(
 		private EntityManager $entityManager,
 		private CategoryManager $categoryManager,
-		private Configuration $configuration,
 		private ShopInfo $shopInfo,
 		private MessageManager $messageManager,
 		private ?LinkGenerator $linkGenerator = null,
 	) {
+		$deliveryRepository = $entityManager->getRepository(DeliveryEntity::class);
+		assert($deliveryRepository instanceof DeliveryRepository);
+		$this->deliveryRepository = $deliveryRepository;
 	}
 
 
@@ -35,11 +44,11 @@ final class HeurekaProductLoader implements ProductLoader
 	 */
 	public function getProducts(): array
 	{
-		/** @var Product[] $products */
+		/** @var array<int, Product> $products */
 		$products = $this->entityManager->getRepository(Product::class)
 			->createQueryBuilder('product')
 			->select('product, mainCategory, mainImage, image, parameter, variant, smartDescription')
-			->leftJoin('product.mainCategory', 'mainCategory')
+			->join('product.mainCategory', 'mainCategory')
 			->leftJoin('product.mainImage', 'mainImage')
 			->leftJoin('product.images', 'image')
 			->leftJoin('product.parameters', 'parameter')
@@ -57,7 +66,7 @@ final class HeurekaProductLoader implements ProductLoader
 			try {
 				$return[] = $this->mapProduct($product);
 			} catch (\InvalidArgumentException $e) {
-				$this->messageManager->handle($product, $e->getMessage());
+				$this->messageManager->log($product, $e->getMessage());
 			}
 		}
 		$this->messageManager->flush();
@@ -73,9 +82,7 @@ final class HeurekaProductLoader implements ProductLoader
 	{
 		$return = [];
 		$mainCategory = $product->getMainCategory();
-		$heurekaCategoryId = $mainCategory !== null
-			? $mainCategory->getHeurekaCategoryId()
-			: null;
+		$heurekaCategoryId = $mainCategory?->getHeurekaCategoryId();
 		if ($heurekaCategoryId === null) {
 			throw new \InvalidArgumentException('Heureka category does not exist.');
 		}
@@ -83,14 +90,14 @@ final class HeurekaProductLoader implements ProductLoader
 			$manufacturer = $product->getManufacturer();
 			$item = new HeurekaProduct(
 				itemId: (string) $product->getId(),
-				product: (string) $product->getName(),
-				productName: (string) $product->getName(),
+				product: $product->getLabel(),
+				productName: $product->getLabel(),
 				url: $this->getProductLink($product),
-				priceVat: $product->getPrice(),
+				priceVat: (float) $product->getPrice(),
 				category: $this->categoryManager->getCategory($heurekaCategoryId),
 				manufacturer: $manufacturer !== null
-				? $manufacturer->getName()
-				: $this->getDefaultManufacturer(),
+					? $manufacturer->getName()
+					: $this->getDefaultManufacturer(),
 			);
 			$item->setDescription($this->processDescription($product));
 			if ($product->isSale()) {
@@ -139,7 +146,7 @@ final class HeurekaProductLoader implements ProductLoader
 		$return->setItemId($product->getId() . '-' . $variant->getId());
 		$return->addCustomTag('ITEMGROUP_ID', (string) $product->getId());
 		$return->setProductName($variant->getLabel());
-		$return->setPriceVat($variant->getPrice());
+		$return->setPriceVat((float) $variant->getPrice());
 		$return->setEan((string) $variant->getEan());
 		$return->setParams(ProductVariant::unserializeParameters($variant->getRelationHash()));
 		$return->setUrl($this->getProductLink($product, $variant));
@@ -173,12 +180,20 @@ final class HeurekaProductLoader implements ProductLoader
 	 */
 	private function getDelivery(Product $product): array
 	{
-		// TODO: Load available deliveries automatically
-		return [
-			new Delivery(Delivery::ZASILKOVNA, 82, 97),
-			new Delivery(Delivery::DPD, 145, 160),
-			new Delivery(Delivery::GLS, 120, 145),
-		];
+		$return = [];
+		foreach ($this->getAllDeliveries() as $delivery) {
+			$priceCod = $delivery->getPriceCod();
+			try {
+				$return[] = new Delivery(
+					id: strtoupper($delivery->getCode()),
+					price: (float) $delivery->getPrice(),
+					priceCod: $priceCod !== null ? (float) $priceCod : null,
+				);
+			} catch (\InvalidArgumentException) {
+			}
+		}
+
+		return $return;
 	}
 
 
@@ -191,9 +206,12 @@ final class HeurekaProductLoader implements ProductLoader
 			$params['variant'] = $variant->getId();
 		}
 		if ($this->linkGenerator === null) {
-			return Url::get()->getBaseUrl()
-				. '/' . $product->getSlug()
-				. ($variant !== null ? '&variant=' . $variant->getId() : '');
+			return sprintf(
+				'%s/%s%s',
+				Url::get()->getBaseUrl(),
+				$product->getSlug(),
+				$variant !== null ? '&variant=' . $variant->getId() : '',
+			);
 		}
 
 		return $this->linkGenerator->link('Front:Product:detail', $params);
@@ -208,5 +226,18 @@ final class HeurekaProductLoader implements ProductLoader
 		}
 
 		return $cache;
+	}
+
+
+	/**
+	 * @return array<int, DeliveryEntity>
+	 */
+	private function getAllDeliveries(): array
+	{
+		if ($this->deliveryList === null) {
+			$this->deliveryList = $this->deliveryRepository->findAll();
+		}
+
+		return $this->deliveryList;
 	}
 }
