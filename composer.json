@@ -11,7 +11,7 @@
 	"require": {
 		"php": "^8.0",
 		"baraja-core/dynamic-configuration": "^2.1",
-		"baraja-core/heureka-feed": "^2.0",
+		"baraja-core/heureka-feed": "^2.1",
 		"baraja-core/shop": "^1.0",
 		"baraja-core/shop-product": "^1.0",
 		"baraja-core/shop-delivery": "^1.0",
