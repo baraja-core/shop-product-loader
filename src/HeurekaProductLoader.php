@@ -111,10 +111,7 @@ final class HeurekaProductLoader implements ProductLoader
 				$item->addImgUrlAlternative($image->getUrl());
 			}
 			$item->setDeliveryDate(1);
-			$ean = $product->getEan();
-			if ($ean !== null) {
-				$item->setEan($ean);
-			}
+			$item->setEan($product->getEan());
 			$params = [];
 			foreach ($product->getParameters() as $parameter) {
 				if ($parameter->isVariant() === false) {
@@ -147,7 +144,7 @@ final class HeurekaProductLoader implements ProductLoader
 		$return->addCustomTag('ITEMGROUP_ID', (string) $product->getId());
 		$return->setProductName($variant->getLabel());
 		$return->setPriceVat((float) $variant->getPrice());
-		$return->setEan((string) $variant->getEan());
+		$return->setEan($variant->getEan());
 		$return->setParams(ProductVariant::unserializeParameters($variant->getRelationHash()));
 		$return->setUrl($this->getProductLink($product, $variant));
 
