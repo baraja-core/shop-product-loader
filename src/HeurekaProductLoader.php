@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Baraja\Shop\ProductLoader;
 
 
-use Baraja\Doctrine\EntityManager;
 use Baraja\Heureka\CategoryManager;
 use Baraja\Heureka\Delivery;
 use Baraja\Heureka\HeurekaProduct;
@@ -14,20 +13,24 @@ use Baraja\Shop\Delivery\Entity\Delivery as DeliveryEntity;
 use Baraja\Shop\Delivery\Repository\DeliveryRepository;
 use Baraja\Shop\Product\Entity\Product;
 use Baraja\Shop\Product\Entity\ProductVariant;
+use Baraja\Shop\Product\Repository\ProductRepository;
 use Baraja\Shop\ShopInfo;
 use Baraja\Url\Url;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\LinkGenerator;
 
 final class HeurekaProductLoader implements ProductLoader
 {
 	private DeliveryRepository $deliveryRepository;
 
+	private ProductRepository $productRepository;
+
 	/** @var array<int, DeliveryEntity>|null */
 	private ?array $deliveryList = null;
 
 
 	public function __construct(
-		private EntityManager $entityManager,
+		EntityManagerInterface $entityManager,
 		private CategoryManager $categoryManager,
 		private ShopInfo $shopInfo,
 		private MessageManager $messageManager,
@@ -36,6 +39,9 @@ final class HeurekaProductLoader implements ProductLoader
 		$deliveryRepository = $entityManager->getRepository(DeliveryEntity::class);
 		assert($deliveryRepository instanceof DeliveryRepository);
 		$this->deliveryRepository = $deliveryRepository;
+		$productRepository = $entityManager->getRepository(Product::class);
+		assert($productRepository instanceof ProductRepository);
+		$this->productRepository = $productRepository;
 	}
 
 
@@ -45,7 +51,7 @@ final class HeurekaProductLoader implements ProductLoader
 	public function getProducts(): array
 	{
 		/** @var array<int, Product> $products */
-		$products = $this->entityManager->getRepository(Product::class)
+		$products = $this->productRepository
 			->createQueryBuilder('product')
 			->select('product, mainCategory, mainImage, image, parameter, variant, smartDescription')
 			->join('product.mainCategory', 'mainCategory')
