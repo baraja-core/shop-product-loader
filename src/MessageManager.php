@@ -44,9 +44,7 @@ final class MessageManager
 
 		try {
 			$log = $this->productLoaderMessageRepository->getByHash($hash);
-			if ($log->updateNow()) { // has been changed?
-				$this->needFlush = true;
-			}
+			$log->updateNow();
 		} catch (NoResultException|NonUniqueResultException) {
 			$this->entityManager->persist($log);
 			$this->needFlush = true;

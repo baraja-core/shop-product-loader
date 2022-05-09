@@ -84,11 +84,9 @@ class ProductLoaderMessage
 	}
 
 
-	public function updateNow(): bool
+	public function updateNow(): void
 	{
 		$this->updatedDate = new \DateTimeImmutable;
-
-		return false;
 	}
 
 
