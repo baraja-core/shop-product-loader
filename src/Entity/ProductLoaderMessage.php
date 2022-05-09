@@ -14,10 +14,10 @@ use Doctrine\ORM\Mapping as ORM;
 class ProductLoaderMessage
 {
 	public const
-		LEVEL_INFO = 'info',
-		LEVEL_MESSAGE = 'message',
-		LEVEL_ERROR = 'error',
-		LEVEL_CRITICAL = 'critical';
+		LevelInfo = 'info',
+		LevelMessage = 'message',
+		LevelError = 'error',
+		LevelCritical = 'critical';
 
 	#[ORM\Id]
 	#[ORM\Column(type: 'integer', unique: true, options: ['unsigned' => true])]
@@ -43,7 +43,7 @@ class ProductLoaderMessage
 	private \DateTimeInterface $updatedDate;
 
 
-	public function __construct(Product $product, string $message, string $level = self::LEVEL_INFO)
+	public function __construct(Product $product, string $message, string $level = self::LevelInfo)
 	{
 		$this->product = $product;
 		$this->message = $message;

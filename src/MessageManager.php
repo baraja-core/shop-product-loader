@@ -34,7 +34,7 @@ final class MessageManager
 	public function log(
 		Product $product,
 		string $message,
-		string $level = ProductLoaderMessage::LEVEL_INFO,
+		string $level = ProductLoaderMessage::LevelInfo,
 	): ProductLoaderMessage {
 		$log = new ProductLoaderMessage($product, $message, $level);
 		$hash = $log->getHash();
