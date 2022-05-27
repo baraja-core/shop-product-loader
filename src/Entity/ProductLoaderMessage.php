@@ -48,7 +48,7 @@ class ProductLoaderMessage
 		$this->product = $product;
 		$this->message = $message;
 		$this->level = $level;
-		$this->hash = md5($message);
+		$this->hash = $this->createHash($product, $message);
 		$this->insertedDate = new \DateTimeImmutable;
 		$this->updateNow();
 	}
@@ -99,5 +99,15 @@ class ProductLoaderMessage
 	public function getUpdatedDate(): \DateTimeInterface
 	{
 		return $this->updatedDate;
+	}
+
+
+	private function createHash(Product $product, string $message): string
+	{
+		return sprintf(
+			'%d_%s',
+			$product->getId(),
+			substr(md5($message), 0, strlen((string) $product->getId()) - 1),
+		);
 	}
 }
